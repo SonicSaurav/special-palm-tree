@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Search Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Hotel Search Assistant</h1>
+            <div class="model-selector">
+                <label for="model1-select">Model 1:</label>
+                <select id="model1-select">
+                    <option value="together" selected>Together (DeepSeek-R1)</option>
+                    <option value="claude">Claude (3-7-sonnet)</option>
+                    <option value="groq">Groq (DeepSeek-R1-Distill)</option>
+                    <option value="openai">OpenAI (o3-mini)</option>
+                </select>
+                
+                <label for="model2-select">Model 2:</label>
+                <select id="model2-select">
+                    <option value="together">Together (DeepSeek-R1)</option>
+                    <option value="claude" selected>Claude (3-7-sonnet)</option>
+                    <option value="groq">Groq (DeepSeek-R1-Distill)</option>
+                    <option value="openai">OpenAI (o3-mini)</option>
+                </select>
+                
+                <label class="toggle">
+                    <input type="checkbox" id="search-toggle" checked>
+                    <span class="toggle-label">Enable Search</span>
+                </label>
+                <label class="toggle">
+                    <input type="checkbox" id="critique-toggle" checked>
+                    <span class="toggle-label">Enable Critique</span>
+                </label>
+            </div>
+            <div class="action-buttons">
+                <button id="save-button" class="action-btn">Save Conversation</button>
+                <button id="clear-button" class="action-btn danger">Clear Conversation</button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be inserted here -->
+                </div>
+                <div class="chat-input-container">
+                    <textarea id="user-input" placeholder="Enter your message..." rows="3"></textarea>
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+            
+            <div class="workflow-panel">
+                <h2>Workflow Status</h2>
+                
+                <div class="workflow-step">
+                    <h3>NER Extraction</h3>
+                    <div class="status-indicator" id="ner-status">Waiting for input</div>
+                    <div class="step-content" id="ner-content">
+                        <pre>No data yet</pre>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h3>Search Decision</h3>
+                    <div class="status-indicator" id="search-decision-status">Waiting for input</div>
+                    <div class="step-content" id="search-decision-content">
+                        <pre>No data yet</pre>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h3>Search Results</h3>
+                    <div class="status-indicator" id="search-status">Waiting for input</div>
+                    <div class="step-content" id="search-content">
+                        <pre>No data yet</pre>
+                    </div>
+                </div>
+                
+                <div class="model-responses">
+                    <div class="workflow-step model-response">
+                        <h3 id="model1-name">Model 1 Response</h3>
+                        <div class="status-indicator" id="model1-status">Waiting for input</div>
+                        <div class="step-content" id="model1-content">
+                            <div class="thinking-container">
+                                <h4>Thinking:</h4>
+                                <pre id="model1-thinking-content">No data yet</pre>
+                            </div>
+                            <div class="response-container">
+                                <h4>Response:</h4>
+                                <pre id="model1-response-content">No data yet</pre>
+                            </div>
+                            <button class="choose-model-btn" id="choose-model1-btn" style="display: none;">Choose This Response</button>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step model-response">
+                        <h3 id="model2-name">Model 2 Response</h3>
+                        <div class="status-indicator" id="model2-status">Waiting for input</div>
+                        <div class="step-content" id="model2-content">
+                            <div class="thinking-container">
+                                <h4>Thinking:</h4>
+                                <pre id="model2-thinking-content">No data yet</pre>
+                            </div>
+                            <div class="response-container">
+                                <h4>Response:</h4>
+                                <pre id="model2-response-content">No data yet</pre>
+                            </div>
+                            <button class="choose-model-btn" id="choose-model2-btn" style="display: none;">Choose This Response</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="workflow-step">
+                    <h3>Critique</h3>
+                    <div class="status-indicator" id="critique-status">Waiting for input</div>
+                    <div class="step-content" id="critique-content">
+                        <div class="tabs">
+                            <button class="tab-btn active" data-target="model1-critique">Model 1 Critique</button>
+                            <button class="tab-btn" data-target="model2-critique">Model 2 Critique</button>
+                        </div>
+                        <div class="tab-content active" id="model1-critique">
+                            <pre>No data yet</pre>
+                        </div>
+                        <div class="tab-content" id="model2-critique">
+                            <pre>No data yet</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Save Dialog -->
+        <div class="modal" id="save-dialog">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Save Conversation</h2>
+                <p>Your conversation has been saved!</p>
+                <div class="saved-file-info">
+                    <p>Filename: <span id="saved-filename"></span></p>
+                </div>
+                <div class="modal-actions">
+                    <button id="download-save-btn">Download</button>
+                    <button id="close-save-btn">Close</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Clear Confirmation Dialog -->
+        <div class="modal" id="clear-dialog">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Clear Conversation</h2>
+                <p>Are you sure you want to clear the current conversation? This action cannot be undone.</p>
+                <div class="modal-actions">
+                    <button id="confirm-clear-btn" class="danger">Yes, Clear</button>
+                    <button id="cancel-clear-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Templates for dynamic content -->
+    <template id="user-message-template">
+        <div class="message user-message">
+            <div class="message-content"></div>
+        </div>
+    </template>
+    
+    <template id="assistant-message-template">
+        <div class="message assistant-message">
+            <div class="message-content"></div>
+            <div class="message-metadata">
+                <div class="model-indicator">
+                    <span class="model-label">Model:</span>
+                    <span class="model-name"></span>
+                </div>
+                <div class="score-indicator">
+                    <span class="score-label">Quality Score:</span>
+                    <span class="score-value"></span>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="model-comparison-template">
+        <div class="model-comparison">
+            <h3 class="comparison-header">Choose a response to continue:</h3>
+            <div class="model-options">
+                <div class="model-option">
+                    <div class="model-name"></div>
+                    <div class="model-response"></div>
+                    <div class="model-score">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value"></span>
+                    </div>
+                    <button class="choose-btn">Select</button>
+                </div>
+                <div class="model-option">
+                    <div class="model-name"></div>
+                    <div class="model-response"></div>
+                    <div class="model-score">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value"></span>
+                    </div>
+                    <button class="choose-btn">Select</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+    <template id="status-template">
+        <div class="status">
+            <div class="status-label"></div>
+        </div>
+    </template>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
